@@ -1,3 +1,4 @@
+use "linal"
 
 actor Entity
   var _x : F32 = 0

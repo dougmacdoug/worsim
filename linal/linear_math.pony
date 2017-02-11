@@ -5,8 +5,11 @@
  * Matrix4
  * Quaternion
 
+Note: because of the way pony handles tuples there is a type alias to hold the tuple
+and a primitive to hold the operator functions for each vector type
+
 Example:
-  let v2 = Linear.vec2fun()
+  let v2 = Linear.vec2fun() // gives us nice shorthand to Vector2 Functions
   let p1 = (F32(1),F32(1))
   let p2 : Vector2 = (3,3)
   var x : F32 = 1.2
@@ -25,8 +28,6 @@ type MaybeVector  is (AnyVector | None)
 primitive Linear
     fun vec2fun() : VectorFun[Vector2] val => _V2Fun
     fun vec3fun() : VectorFun[Vector3] val => _V3Fun
-
-    fun eq(a: F32, b: F32, eps: F32)  : Bool => (a - b).abs() < eps
 
     fun vec2(v' : MaybeVector) : Vector2 =>
       match v'
@@ -51,6 +52,9 @@ primitive Linear
       | let v : Vector4 => v
       else (0,0,0,0)
       end
+      // put util functions here
+      fun eq(a: F32, b: F32, eps: F32)  : Bool => (a - b).abs() < eps
+
 // cannot use tuple as constraint
 // trait primarily used for code validation
 trait VectorFun[V /*: AnyVector */]
@@ -81,8 +85,8 @@ primitive _V2Fun is VectorFun[Vector2 val]
   fun y(v: Vector2) : F32 => v._2
   fun z(v: Vector2) : F32 => 0
   fun w(v: Vector2) : F32 => 0
-  fun add(a: Vector2, b: Vector2) : Vector2 => (a._1 + b._1, b._2 + b._2)
-  fun sub(a: Vector2, b: Vector2) : Vector2 => (a._1 - b._1, b._2 - b._2)
+  fun add(a: Vector2, b: Vector2) : Vector2 => (a._1 + b._1, a._2 + b._2)
+  fun sub(a: Vector2, b: Vector2) : Vector2 => (a._1 - b._1, a._2 - b._2)
   fun neg(v: Vector2) : Vector2 => (-v._1 , -v._2)
   fun mul(v: Vector2, s: F32) : Vector2  => (v._1 * s, v._2 * s)
   fun div(v: Vector2, s: F32)  : Vector2  => (v._1 / s, v._2 / s)
@@ -105,8 +109,8 @@ primitive _V3Fun is VectorFun[Vector3 val]
   fun y(v: Vector3) : F32 => v._2
   fun z(v: Vector3) : F32 => v._3
   fun w(v: Vector3) : F32 => 0
-  fun add(a: Vector3, b: Vector3) : Vector3 => (a._1 + b._1, b._2 + b._2, b._3 + b._3)
-  fun sub(a: Vector3, b: Vector3) : Vector3 => (a._1 - b._1, b._2 - b._2, b._3 - b._3)
+  fun add(a: Vector3, b: Vector3) : Vector3 => (a._1 + b._1, a._2 + b._2, a._3 + b._3)
+  fun sub(a: Vector3, b: Vector3) : Vector3 => (a._1 - b._1, a._2 - b._2, a._3 - b._3)
   fun neg(v: Vector3) : Vector3 => (-v._1 , -v._2, -v._3)
   fun mul(v: Vector3, s: F32) : Vector3  => (v._1 * s, v._2 * s, v._3 * s)
   fun div(v: Vector3, s: F32)  : Vector3  => (v._1 / s, v._2 / s, v._3 / s)
@@ -119,3 +123,30 @@ primitive _V3Fun is VectorFun[Vector3 val]
   fun eq(a: Vector3, b: Vector3, eps: F32) : Bool =>
     Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
      and Linear.eq(a._3,b._3, eps)
+
+
+primitive _V4Fun is VectorFun[Vector4 val]
+  fun apply(x' : F32, y': F32, z': F32, w': F32) : Vector4 => (x',y',z',w')
+  fun zero() : Vector4 => (0,0,0,0)
+  fun id() : Vector4 => (1,1,1,1)
+  fun x(v: Vector4) : F32 => v._1
+  fun y(v: Vector4) : F32 => v._2
+  fun z(v: Vector4) : F32 => v._3
+  fun w(v: Vector4) : F32 => v._4
+  fun add(a: Vector4, b: Vector4) : Vector4 =>
+    (a._1 + b._1, a._2 + b._2, a._3 + b._3, a._4 + b._4)
+  fun sub(a: Vector4, b: Vector4) : Vector4 =>
+    (a._1 - b._1, a._2 - b._2, a._3 - b._3, a._4 - b._4)
+  fun neg(v: Vector4) : Vector4 => (-v._1 , -v._2, -v._3, -v._4)
+  fun mul(v: Vector4, s: F32) : Vector4  => (v._1 * s, v._2 * s, v._3 * s, v._4 * s)
+  fun div(v: Vector4, s: F32)  : Vector4  => (v._1 / s, v._2 / s, v._3 / s, v._4 / s)
+  fun dot(a: Vector4, b: Vector4) : F32 =>
+    (a._1 * b._1) + (a._2 * b._2) + (a._3 * b._3)+ (a._4 * b._4)
+  fun sq_len(v: Vector4) : F32 => dot(v,v)
+  fun len(v: Vector4) : F32 => dot(v,v).sqrt()
+  fun sq_dist(a : Vector4, b : Vector4) : F32  => sq_len(sub(a,b))
+  fun dist(a : Vector4, b : Vector4) : F32  => len(sub(a,b))
+  fun unit(v : Vector4) : Vector4 => div(v, len(v))
+  fun eq(a: Vector4, b: Vector4, eps: F32) : Bool =>
+   Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
+   and Linear.eq(a._3,b._3, eps) and Linear.eq(a._4,b._4, eps)
