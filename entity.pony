@@ -1,17 +1,20 @@
-// @TODO: convince ponyc to adopt better naming convention!!
-// @TODO: X_AXIS or X_Axis better than XAxis or AxisX
-primitive AxisX
-primitive AxisY
-primitive AxisZ
-
 
 actor Entity
-  be stuff() =>
-    let v2a : Vector2 = (1,1)
-    let v2b = V2(4,4)
-    let v3a : Vector3 = (1,2,3)
-    let v3b = V3(3,4,5)
-    let xc = V3.add(v3a, v3b)
-    // let p :V2 = Vec.V2(Vec.scale(v, s))
-    // let addp : V2= Vec.V2(Vec.add(v,p))
-    // Vec.x(addp)
+  var _x : F32 = 0
+  var _y : F32 = 0
+  var _z : F32 = 0
+
+  fun position() : Vector3 => (_x,_y,_z)
+  fun ref _set_position(v : Vector3) => (_x, _y, _z) = v
+
+  be test_stuff() =>
+    let v2 = Linear.vec2fun()
+
+    let p1 = (F32(1),F32(1))
+    let p2 : Vector2 = (3,3)
+    let p3 = v2.add(p1,p2)
+
+    let dist = v2.dist(Linear.vec2(position()), p3)
+    let p4 = v2.add(p1, v2.mul(p2, 1.5))
+
+    _set_position(Linear.vec3(p4))
