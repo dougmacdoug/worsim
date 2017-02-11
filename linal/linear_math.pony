@@ -1,6 +1,5 @@
 """
 // TODO:
- * Vecto4
  * Matrix3
  * Matrix4
  * Quaternion
@@ -52,8 +51,24 @@ primitive Linear
       | let v : Vector4 => v
       else (0,0,0,0)
       end
-      // put util functions here
-      fun eq(a: F32, b: F32, eps: F32)  : Bool => (a - b).abs() < eps
+    // put util functions here
+    fun eq(a: F32, b: F32, eps: F32)  : Bool => (a - b).abs() < eps
+
+    fun cross2(a: Vector2, b: Vector2) : F32 => (a._1*b._2) - (b._1*a._2)
+    fun cross3(a: Vector3, b: Vector3) : Vector3 =>
+      (
+        (a._2*b._3) - (a._3*b._2),
+        (a._3*b._1) - (a._1*b._3),
+        (a._1*b._2) - (a._2*b._1)
+       )
+    fun lerp(a: F32, b: F32, t: F32) : F32 => (a*(1-t)) + (b*t)
+    fun unlerp(a: F32, b: F32, t: F32) : F32 => (t-a)/(b-a)
+    fun smooth_step(a: F32, b: F32, t: F32) : F32 =>
+       let x = (t - a)/(b - a)
+       x*x*(3.0 - (2.0*x))
+    fun smoother_step(a: F32, b: F32, t: F32) : F32 =>
+      let x = (t - a)/(b - a)
+      x*x*x*((x*((6.0*x) - 15.0)) + 10.0) 
 
 // cannot use tuple as constraint
 // trait primarily used for code validation
@@ -70,12 +85,13 @@ trait VectorFun[V /*: AnyVector */]
   fun mul(v: V, s: F32) : V
   fun div(v: V, s: F32)  : V
   fun dot(a: V, b: V) : F32
-  fun sq_len(v: V) : F32
+  fun len2(v: V) : F32
   fun len(v: V) : F32
-  fun sq_dist(a : V, b : V) : F32
+  fun dist2(a : V, b : V) : F32
   fun dist(a : V, b : V) : F32
   fun unit(v : V) : V
   fun eq(a: V, b: V, eps: F32) : Bool
+  // fun lerp(a: V, b: V, delta: F32) : V
 
 primitive _V2Fun is VectorFun[Vector2 val]
   fun apply(x' : F32, y': F32) : Vector2 => (x',y')
@@ -92,10 +108,11 @@ primitive _V2Fun is VectorFun[Vector2 val]
   fun div(v: Vector2, s: F32)  : Vector2  => (v._1 / s, v._2 / s)
   fun dot(a: Vector2, b: Vector2) : F32 => (a._1 * b._1) + (a._2 * b._2)
 
+
 // TODO: perhaps write these out longhand to reduce number of tuples on stack
-  fun sq_len(v: Vector2) : F32 => dot(v,v)
+  fun len2(v: Vector2) : F32 => dot(v,v)
   fun len(v: Vector2) : F32 => dot(v,v).sqrt()
-  fun sq_dist(a : Vector2, b : Vector2) : F32  => sq_len(sub(a,b))
+  fun dist2(a : Vector2, b : Vector2) : F32  => len2(sub(a,b))
   fun dist(a : Vector2, b : Vector2) : F32  => len(sub(a,b))
   fun unit(v : Vector2) : Vector2 => div(v, len(v))
   fun eq(a: Vector2, b: Vector2, eps: F32) : Bool =>
@@ -115,14 +132,17 @@ primitive _V3Fun is VectorFun[Vector3 val]
   fun mul(v: Vector3, s: F32) : Vector3  => (v._1 * s, v._2 * s, v._3 * s)
   fun div(v: Vector3, s: F32)  : Vector3  => (v._1 / s, v._2 / s, v._3 / s)
   fun dot(a: Vector3, b: Vector3) : F32 => (a._1 * b._1) + (a._2 * b._2) + (a._3 * b._3)
-  fun sq_len(v: Vector3) : F32 => dot(v,v)
+  fun len2(v: Vector3) : F32 => dot(v,v)
   fun len(v: Vector3) : F32 => dot(v,v).sqrt()
-  fun sq_dist(a : Vector3, b : Vector3) : F32  => sq_len(sub(a,b))
+  fun dist2(a : Vector3, b : Vector3) : F32  => len2(sub(a,b))
   fun dist(a : Vector3, b : Vector3) : F32  => len(sub(a,b))
   fun unit(v : Vector3) : Vector3 => div(v, len(v))
   fun eq(a: Vector3, b: Vector3, eps: F32) : Bool =>
     Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
      and Linear.eq(a._3,b._3, eps)
+
+
+
 
 
 primitive _V4Fun is VectorFun[Vector4 val]
@@ -142,9 +162,9 @@ primitive _V4Fun is VectorFun[Vector4 val]
   fun div(v: Vector4, s: F32)  : Vector4  => (v._1 / s, v._2 / s, v._3 / s, v._4 / s)
   fun dot(a: Vector4, b: Vector4) : F32 =>
     (a._1 * b._1) + (a._2 * b._2) + (a._3 * b._3)+ (a._4 * b._4)
-  fun sq_len(v: Vector4) : F32 => dot(v,v)
+  fun len2(v: Vector4) : F32 => dot(v,v)
   fun len(v: Vector4) : F32 => dot(v,v).sqrt()
-  fun sq_dist(a : Vector4, b : Vector4) : F32  => sq_len(sub(a,b))
+  fun dist2(a : Vector4, b : Vector4) : F32  => len2(sub(a,b))
   fun dist(a : Vector4, b : Vector4) : F32  => len(sub(a,b))
   fun unit(v : Vector4) : Vector4 => div(v, len(v))
   fun eq(a: Vector4, b: Vector4, eps: F32) : Bool =>
