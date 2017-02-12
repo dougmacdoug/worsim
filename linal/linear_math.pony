@@ -34,6 +34,7 @@ type Vector2 is (F32, F32)
 type Vector3 is (F32, F32, F32)
 type Vector4 is (F32, F32, F32, F32)
 type FixVector  is (Vector2 | Vector3 | Vector4)
+// @TODO: consider removing.. not particularly useful
 type OptVector is (FixVector | None)
 
 type Matrix2 is (Vector2, Vector2)
@@ -73,38 +74,39 @@ primitive Linear
       else (0,0,0,0)
       end
 
-    fun _smat(a: Vector4, b: Vector4, c: Vector4, d: Vector4, n: USize) : String iso^ =>
-      recover
+    fun _smat(a: Vector4, b: Vector4, c: Vector4 = V4Fun.zero(),
+              d: Vector4 = V4Fun.zero(), n: USize) : String iso^
+    =>recover
         var s = String(600)
         s.push('(')
-        s.append(_svec(a._1,a._2,a._3,a._4, n))
+        s.append(_svec(a, n))
         s.push(',')
-        s.append(_svec(b._1,b._2,b._3,b._4, n))
+        s.append(_svec(b, n))
         if n > 2 then
           s.push(',')
-          s.append(_svec(c._1,c._2,c._3,c._4, n))
+          s.append(_svec(c, n))
           if n > 3 then
             s.push(',')
-            s.append(_svec(d._1,d._2,d._3,d._4, n))
+            s.append(_svec(d, n))
           end
         end
         s.push(')')
         s.recalc()
       end
 
-    fun _svec(x: F32, y: F32,z: F32, w: F32, n: USize) : String iso^ =>
+    fun _svec(v: Vector4, n: USize) : String iso^ =>
       recover
         var s = String(160)
         s.push('(')
-        s.append(x.string())
+        s.append(v._1.string())
         s.push(',')
-        s.append(y.string())
+        s.append(v._2.string())
         if n > 2 then
           s.push(',')
-          s.append(z.string())
+          s.append(v._3.string())
           if n > 3 then
             s.push(',')
-            s.append(w.string())
+            s.append(v._4.string())
           end
         end
         s.push(')')
@@ -113,12 +115,12 @@ primitive Linear
 
     fun to_string(o: (Quaternion | Matrix2 | Matrix3 | Matrix4 | OptVector)) : String iso^ =>
       match o
-      | let v : Vector2 => _svec(v._1, v._2, 0, 0, 2)
-      | let v : Vector3 => _svec(v._1, v._2, v._3, 0, 3)
-      | let v : Vector4 => _svec(v._1, v._2, v._3, v._4, 4)
-      | let v : Quaternion => _svec(v._1, v._2, v._3, v._4, 4)
-      | let m : Matrix2 => _smat(vec4(m._1), vec4(m._2), V4Fun.zero(), V4Fun.zero(), 2)
-      | let m : Matrix3 => _smat(vec4(m._1), vec4(m._2), vec4(m._3), V4Fun.zero(), 3)
+      | let v : Vector2 => _svec(vec4(v), 2)
+      | let v : Vector3 => _svec(vec4(v), 3)
+      | let v : Vector4 => _svec(v, 4)
+      | let v : Quaternion => _svec(v, 4)
+      | let m : Matrix2 => _smat(vec4(m._1), vec4(m._2) where n=2 )
+      | let m : Matrix3 => _smat(vec4(m._1), vec4(m._2), vec4(m._3) where n=3)
       | let m : Matrix4 => _smat(vec4(m._1), vec4(m._2), vec4(m._3), vec4(m._4), 4)
       else "None".string()
       end
