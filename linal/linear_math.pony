@@ -1,7 +1,5 @@
 """
 // TODO:
- * Matrix3
- * Matrix4
  * Quaternion
 
 Note: because of the way pony handles tuples there is a type alias to hold the tuple
@@ -27,10 +25,16 @@ type MaybeVector  is (AnyVector | None)
 type Matrix2 is (Vector2, Vector2)
 type Matrix3 is (Vector3, Vector3, Vector3)
 type Matrix4 is (Vector4, Vector4, Vector4, Vector4)
+type AnyMatrix  is (Matrix2 | Matrix3 | Matrix4)
+type MaybeMatrix is (AnyMatrix | None)
 
 primitive Linear
-    fun vec2fun() : VectorFun[Vector2] val => _V2Fun
-    fun vec3fun() : VectorFun[Vector3] val => _V3Fun
+    fun vec2fun() : _V2Fun val => _V2Fun
+    fun vec3fun() : _V3Fun val => _V3Fun
+    fun vec4fun() : _V4Fun val => _V4Fun
+    fun mat2fun() : _M2Fun val => _M2Fun
+    fun mat3fun() : _M3Fun val => _M3Fun
+//    fun quatfun() : _Q4Fun val => _Q4Fun
 
     fun vec2(v' : MaybeVector) : Vector2 =>
       match v'
@@ -57,14 +61,6 @@ primitive Linear
       end
     // put util functions here
     fun eq(a: F32, b: F32, eps: F32)  : Bool => (a - b).abs() < eps
-
-    fun cross2(a: Vector2, b: Vector2) : F32 => (a._1*b._2) - (b._1*a._2)
-    fun cross3(a: Vector3, b: Vector3) : Vector3 =>
-      (
-        (a._2*b._3) - (a._3*b._2),
-        (a._3*b._1) - (a._1*b._3),
-        (a._1*b._2) - (a._2*b._1)
-       )
     fun lerp(a: F32, b: F32, t: F32) : F32 => (a*(1-t)) + (b*t)
     fun unlerp(a: F32, b: F32, t: F32) : F32 => (t-a)/(b-a)
     fun smooth_step(a: F32, b: F32, t: F32) : F32 =>
@@ -110,6 +106,7 @@ primitive _V2Fun is VectorFun[Vector2 val]
   fun dist2(a : Vector2, b : Vector2) : F32  => len2(sub(a,b))
   fun dist(a : Vector2, b : Vector2) : F32  => len(sub(a,b))
   fun unit(v : Vector2) : Vector2 => div(v, len(v))
+  fun cross(a: Vector2, b: Vector2) : F32 => (a._1*b._2) - (b._1*a._2)
   fun eq(a: Vector2, b: Vector2, eps: F32) : Bool =>
     Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
 
@@ -128,13 +125,15 @@ primitive _V3Fun is VectorFun[Vector3 val]
   fun dist2(a : Vector3, b : Vector3) : F32  => len2(sub(a,b))
   fun dist(a : Vector3, b : Vector3) : F32  => len(sub(a,b))
   fun unit(v : Vector3) : Vector3 => div(v, len(v))
+  fun cross(a: Vector3, b: Vector3) : Vector3 =>
+      (
+        (a._2*b._3) - (a._3*b._2),
+        (a._3*b._1) - (a._1*b._3),
+        (a._1*b._2) - (a._2*b._1)
+       )
   fun eq(a: Vector3, b: Vector3, eps: F32) : Bool =>
     Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
      and Linear.eq(a._3,b._3, eps)
-
-
-
-
 
 primitive _V4Fun is VectorFun[Vector4 val]
   fun apply(x' : F32, y': F32, z': F32, w': F32) : Vector4 => (x',y',z',w')
@@ -162,8 +161,10 @@ primitive _M2Fun
   fun apply(r1: Vector2, r2: Vector2) : Matrix2 => (r1, r2)
   fun zero() : Matrix2 => ((0,0),(0,0))
   fun id() : Matrix2 => ((1,0),(0,1))
+  fun rowx(m: Matrix2) : Vector2 => m._1
+  fun rowy(m: Matrix2) : Vector2 => m._2
   fun colx(m: Matrix2) : Vector2 => (m._1._1, m._2._1)
-  fun coly(m: Matrix2) : Vector2 => (m._1._1, m._2._1)
+  fun coly(m: Matrix2) : Vector2 => (m._1._2, m._2._2)
   fun rot(angle: F32) : Matrix2 =>
     	let c : F32 = angle.cos()
     	let s : F32 = angle.sin()
@@ -180,9 +181,10 @@ primitive _M2Fun
 
   fun mul(a: Matrix2, s: F32) : Matrix2 =>
     ((a._1._1*s, a._1._2*s), (a._2._1*s, a._2._2*s))
-  fun div(a: Matrix2, s: F32) : Matrix2 => mul(a, 1.0 / s)
 
-  fun trans(a: Matrix2) : Matrix2 => ((a._1._1, a._2._1), (a._1._2, -a._2._2))
+  fun div(a: Matrix2, s: F32) : Matrix2 => mul(a, F32(1) / s)
+
+  fun trans(a: Matrix2) : Matrix2 => ((a._1._1, a._2._1), (a._1._2, a._2._2))
 
   fun mulv2(a: Matrix2, v: Vector2) : Vector2 =>
       ( (a._1._1*v._1) + (a._1._2* v._2), (a._2._1*v._1) + (a._2._2*v._2))
@@ -210,3 +212,113 @@ primitive _M2Fun
      Linear.eq(a._1._2, b._1._2, eps) and
      Linear.eq(a._2._1, b._2._1, eps) and
      Linear.eq(a._2._2, b._2._2, eps)
+
+primitive _M3Fun
+  fun apply(r1: Vector3, r2: Vector3, r3: Vector3) : Matrix3 => (r1, r2, r3)
+  fun zero() : Matrix3 => ((0,0,0),(0,0,0),(0,0,0))
+  fun id() : Matrix3 => ((1,0,0),(0,1,0),(0,0,1))
+  fun rowx(m: Matrix3) : Vector3 => m._1
+  fun rowy(m: Matrix3) : Vector3 => m._2
+  fun rowz(m: Matrix3) : Vector3 => m._3
+  fun colx(m: Matrix3) : Vector3 => (m._1._1, m._2._1, m._3._1)
+  fun coly(m: Matrix3) : Vector3 => (m._1._2, m._2._2, m._3._2)
+  fun colz(m: Matrix3) : Vector3 => (m._1._3, m._2._3, m._3._3)
+
+  fun rotx(angle: F32) : Matrix3 =>
+   	let c : F32 = angle.cos()
+   	let s : F32 = angle.sin()
+   	((1, 0, 0), (0, c, -s), (0, s, c))
+  fun roty(angle: F32) : Matrix3 =>
+  	let c : F32 = angle.cos()
+  	let s : F32 = angle.sin()
+  	((c, 0, s), (0, 1, 0), (-s, 0, c))
+  fun rotz(angle: F32) : Matrix3 =>
+  	let c : F32 = angle.cos()
+  	let s : F32 = angle.sin()
+  	((c, -s, 0), (s, c, 0), (0, 0, 1))
+
+   fun add(a: Matrix3, b: Matrix3) =>
+      ( (a._1._1 + b._1._1, a._1._2 + b._1._2, a._1._3 + b._1._3),
+        (a._2._1 + b._2._1, a._2._2 + b._2._2, a._2._3 + b._2._3),
+        (a._3._1 + b._3._1, a._3._2 + b._3._2, a._3._3 + b._3._3))
+
+   fun sub(a: Matrix3, b: Matrix3) =>
+     ( (a._1._1 - b._1._1, a._1._2 - b._1._2, a._1._3 - b._1._3),
+       (a._2._1 - b._2._1, a._2._2 - b._2._2, a._2._3 - b._2._3),
+       (a._3._1 - b._3._1, a._3._2 - b._3._2, a._3._3 - b._3._3))
+
+   fun neg(a: Matrix3) =>
+     ( (-a._1._1, -a._1._2, -a._1._3),
+       (-a._2._1, -a._2._2, -a._2._3),
+       (-a._3._1, -a._3._2, -a._3._3) )
+
+   fun mul(a: Matrix3, s: F32) : Matrix3 =>
+     ( (a._1._1*s, a._1._2*s, a._1._3*s),
+       (a._2._1*s, a._2._2*s, a._2._3*s),
+       (a._3._1*s, a._3._2*s, a._3._3*s) )
+
+   fun div(a: Matrix3, s: F32) : Matrix3 => mul(a, F32(1)/s)
+
+   fun trans(a: Matrix3) : Matrix3 =>
+      ((a._1._1, a._2._1, a._3._1),
+       (a._1._2, a._2._2, a._3._2),
+       (a._1._3, a._2._3, a._3._3))
+
+
+   fun mulv3(a: Matrix3, v: Vector3) : Vector3 =>
+       ((a._1._1 * v._1) + (a._1._2 * v._2) + (a._1._3 * v._3),
+        (a._2._1 * v._1) + (a._2._2 * v._2) + (a._2._3 * v._3),
+        (a._3._1 * v._1) + (a._3._2 * v._2) + (a._3._3 * v._3))
+
+   fun mulm3(a: Matrix3, b: Matrix3) : Matrix3 =>
+     (((a._1._1 * b._1._1) + (a._1._2 * b._2._1) + (a._1._3 * b._3._1),
+       (a._1._1 * b._1._2) + (a._1._2 * b._2._2) + (a._1._3 * b._3._2),
+       (a._1._1 * b._1._3) + (a._1._2 * b._2._3) + (a._1._3 * b._3._3)),
+      ((a._2._1 * b._1._1) + (a._2._2 * b._2._1) + (a._2._3 * b._3._1),
+       (a._2._1 * b._1._2) + (a._2._2 * b._2._2) + (a._2._3 * b._3._2),
+       (a._2._1 * b._1._3) + (a._2._2 * b._2._3) + (a._2._3 * b._3._3)),
+      ((a._3._1 * b._1._1) + (a._3._2 * b._2._1) + (a._3._3 * b._3._1),
+       (a._3._1 * b._1._2) + (a._3._2 * b._2._2) + (a._3._3 * b._3._2),
+       (a._3._1 * b._1._3) + (a._3._2 * b._2._3) + (a._3._3 * b._3._3)))
+
+    fun trace(m: Matrix3) : F32 => m._1._1 + m._2._2 + m._3._3
+
+    fun det(m: Matrix3) : F32 =>
+       (m._1._1 * m._2._2 * m._3._3) +
+       (m._1._2 * m._2._3 * m._3._1) +
+      ((m._2._1 * m._3._2 * m._1._3) -
+       (m._1._3 * m._2._2 * m._3._1) -
+       (m._1._1 * m._2._3 * m._3._2) -
+       (m._1._2 * m._2._1 * m._3._3))
+
+    fun inv(m: Matrix3) : Matrix3 =>
+      let d =  det(m)
+      if d == 0 then zero() else
+      ((((m._2._2 * m._3._3) - (m._2._3 * m._3._2)) / d,
+        ((m._3._2 * m._1._3) - (m._3._3 * m._1._2)) / d,
+        ((m._1._2 * m._2._3) - (m._1._3 * m._2._2)) / d),
+       (((m._2._3 * m._3._1) - (m._2._1 * m._3._3)) / d,
+        ((m._3._3 * m._1._1) - (m._3._1 * m._1._3)) / d,
+        ((m._1._3 * m._2._1) - (m._1._1 * m._2._3)) / d),
+       (((m._2._1 * m._3._2) - (m._2._2 * m._3._1)) / d,
+        ((m._3._1 * m._1._2) - (m._3._2 * m._1._1)) / d,
+        ((m._1._1 * m._2._2) - (m._1._2 * m._2._1)) / d))
+      end
+
+    fun solve(m: Matrix3, v: Vector3) : Vector3 =>
+      let d  = det(m)
+    	let dx = det(((v._1,m._1._2,m._1._3),(v._2,m._2._2,m._2._3),(v._3,m._3._2,m._3._3)))
+    	let dy = det(((m._1._1,v._1,m._1._3),(m._2._1,v._2,m._2._3),(m._3._1,v._3,m._3._3)))
+    	let dz = det(((m._1._1,m._1._2,v._1),(m._2._1,m._2._2,v._2),(m._3._1,m._3._2,v._3)))
+    	(dx/d, dy/d, dz/d)
+
+    fun eq(a: Matrix3, b: Matrix3, eps: F32) : Bool =>
+      Linear.eq(a._1._1, b._1._1, eps) and
+      Linear.eq(a._1._2, b._1._2, eps) and
+      Linear.eq(a._1._3, b._1._3, eps) and
+      Linear.eq(a._2._1, b._2._1, eps) and
+      Linear.eq(a._2._2, b._2._2, eps) and
+      Linear.eq(a._2._3, b._2._3, eps) and
+      Linear.eq(a._3._1, b._3._1, eps) and
+      Linear.eq(a._3._2, b._3._2, eps) and
+      Linear.eq(a._3._3, b._3._3, eps)
