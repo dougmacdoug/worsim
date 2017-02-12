@@ -341,15 +341,15 @@ primitive _Q4Fun
 
   fun from_euler(x : F32, y : F32, z : F32) : Quaternion =>
     // @TODO: maybe drop this down to f32
-    var a' : F64 = x.f64() * 0.5
-    let sr : F64 = a'.sin()
-    let cr : F64 = a'.cos()
-  	a' = y.f64() * 0.5
-    let sp : F64 = a'.sin()
-    let cp : F64 = a'.cos()
-  	a' = z.f64() * 0.5
-    let sy : F64 = a'.sin()
-    let cy : F64 = a'.cos()
+    let x' : F64 = x.f64() * 0.5
+    let sr : F64 = x'.sin()
+    let cr : F64 = x'.cos()
+  	let y' = y.f64() * 0.5
+    let sp : F64 = y'.sin()
+    let cp : F64 = y'.cos()
+  	let z' = z.f64() * 0.5
+    let sy : F64 = z'.sin()
+    let cy : F64 = z'.cos()
     let cpcy : F64 = cp * cy
     let spcy : F64 = sp * cy
     let cpsy : F64 = cp * sy
