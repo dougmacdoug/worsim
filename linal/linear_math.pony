@@ -1,29 +1,40 @@
 """
-// TODO:
- * add fast sqrt for unit vector
- * slerp nlerp
- * Matrix4
- *** UNIT TESTS!
+@author macdougall.doug@gmail.com
 
-Note: because of the way pony handles tuples there is a type alias to hold the tuple
-and a primitive to hold the operator functions for each vector type
+Tuple-based Linear Algebra for typical 2d, 3d operations
+  - operate on the stack
+  - 100% immutable
+
+Each TYPE consists of a type alias and a primitive behaving similar to a "class"
+ - A type alias to a tuple (similar to class state data)
+ - A primitive function collection (similar to methods)
+ - the first argument is similar to "this" except it is immutable
+ - return is typically the modified tuple instead of maniupluating state
 
 Example:
   let v2 = Linear.vec2fun() // gives us nice shorthand to Vector2 Functions
-  let p1 = (F32(1),F32(1))
-  let p2 : Vector2 = (3,3)
-  var x : F32 = 1.2
-  var y : F32 = x + 0.5
-  let p3 = v2.add(p1,p2)
-  let dist = v2.dist((x,y), p3)
-  let p4 = v2.add(p1, v2.mul(p2, 1.5))
+  let a = (F32(1),F32(1)) // simple tuple compatible with Vector2
+  let b : Vector2 = (3,3) // declared type alias forces 3's to F32
+  let c = v2(3,3) // apply sugar => Vector2
+  let d = v2.add(a,b) // a + b
+  let f = v2.mul(v2.unit(d), 5) // scale to 5 units
+
+@TODO:
+*** UNIT TESTS! [more and fix logging, standardize] ***
+   * add fast sqrt for unit vector
+   * slerp nlerp
+   * Matrix4
+   * faster Quaternion
+   * try to use compile time expressions once adopted by pony
+       fun inv(q: Quaternion) : Quaternion => #( div(conj(q), dot(q,q)) )
+   * consider writing longhand
 """
 
 type Vector2 is (F32, F32)
 type Vector3 is (F32, F32, F32)
 type Vector4 is (F32, F32, F32, F32)
-type Vector  is (Vector2 | Vector3 | Vector4)
-type OptionalVector is (Vector | None)
+type FixVector  is (Vector2 | Vector3 | Vector4)
+type OptVector is (FixVector | None)
 
 type Matrix2 is (Vector2, Vector2)
 type Matrix3 is (Vector3, Vector3, Vector3)
@@ -31,14 +42,14 @@ type Matrix4 is (Vector4, Vector4, Vector4, Vector4)
 type Quaternion is (F32, F32, F32, F32)
 
 primitive Linear
-    fun vec2fun() : _V2Fun val => _V2Fun
-    fun vec3fun() : _V3Fun val => _V3Fun
-    fun vec4fun() : _V4Fun val => _V4Fun
-    fun mat2fun() : _M2Fun val => _M2Fun
-    fun mat3fun() : _M3Fun val => _M3Fun
-    fun quatfun() : _Q4Fun val => _Q4Fun
+    fun vec2fun() : V2Fun val => V2Fun
+    fun vec3fun() : V3Fun val => V3Fun
+    fun vec4fun() : V4Fun val => V4Fun
+    fun mat2fun() : M2Fun val => M2Fun
+    fun mat3fun() : M3Fun val => M3Fun
+    fun quatfun() : Q4Fun val => Q4Fun
 
-    fun vec2(v' : OptionalVector) : Vector2 =>
+    fun vec2(v' : OptVector) : Vector2 =>
       match v'
       | let v : Vector2 => v
       | let v : Vector3 => (v._1, v._2)
@@ -46,7 +57,7 @@ primitive Linear
       else (0,0)
       end
 
-    fun vec3(v' : OptionalVector) : Vector3 =>
+    fun vec3(v' : OptVector) : Vector3 =>
       match v'
       | let v : Vector2 => (v._1, v._2, 0)
       | let v : Vector3 => v
@@ -54,15 +65,65 @@ primitive Linear
       else (0,0,0)
       end
 
-    fun vec4(v' : OptionalVector) : Vector4 =>
+    fun vec4(v' : OptVector) : Vector4 =>
       match v'
       | let v : Vector2 => (v._1, v._2, 0, 0)
       | let v : Vector3 => (v._1, v._2, v._3, 0)
       | let v : Vector4 => v
       else (0,0,0,0)
       end
-    // put util functions here
-    fun eq(a: F32, b: F32, eps: F32)  : Bool => (a - b).abs() < eps
+
+    fun _smat(a: Vector4, b: Vector4, c: Vector4, d: Vector4, n: USize) : String iso^ =>
+      recover
+        var s = String(600)
+        s.push('(')
+        s.append(_svec(a._1,a._2,a._3,a._4, n))
+        s.push(',')
+        s.append(_svec(b._1,b._2,b._3,b._4, n))
+        if n > 2 then
+          s.push(',')
+          s.append(_svec(c._1,c._2,c._3,c._4, n))
+          if n > 3 then
+            s.push(',')
+            s.append(_svec(d._1,d._2,d._3,d._4, n))
+          end
+        end
+        s.push(')')
+        s.recalc()
+      end
+
+    fun _svec(x: F32, y: F32,z: F32, w: F32, n: USize) : String iso^ =>
+      recover
+        var s = String(160)
+        s.push('(')
+        s.append(x.string())
+        s.push(',')
+        s.append(y.string())
+        if n > 2 then
+          s.push(',')
+          s.append(z.string())
+          if n > 3 then
+            s.push(',')
+            s.append(w.string())
+          end
+        end
+        s.push(')')
+        s.recalc()
+      end
+
+    fun to_string(o: (Quaternion | Matrix2 | Matrix3 | Matrix4 | OptVector)) : String iso^ =>
+      match o
+      | let v : Vector2 => _svec(v._1, v._2, 0, 0, 2)
+      | let v : Vector3 => _svec(v._1, v._2, v._3, 0, 3)
+      | let v : Vector4 => _svec(v._1, v._2, v._3, v._4, 4)
+      | let v : Quaternion => _svec(v._1, v._2, v._3, v._4, 4)
+      | let m : Matrix2 => _smat(vec4(m._1), vec4(m._2), V4Fun.zero(), V4Fun.zero(), 2)
+      | let m : Matrix3 => _smat(vec4(m._1), vec4(m._2), vec4(m._3), V4Fun.zero(), 3)
+      | let m : Matrix4 => _smat(vec4(m._1), vec4(m._2), vec4(m._3), vec4(m._4), 4)
+      else "None".string()
+      end
+
+    fun eq(a: F32, b: F32, eps: F32 = F32.epsilon())  : Bool => (a - b).abs() < eps
     fun lerp(a: F32, b: F32, t: F32) : F32 => (a*(1-t)) + (b*t)
     fun unlerp(a: F32, b: F32, t: F32) : F32 => (t-a)/(b-a)
     fun smooth_step(a: F32, b: F32, t: F32) : F32 =>
@@ -91,7 +152,7 @@ trait VectorFun[V /*: Vector */]
   fun eq(a: V, b: V, eps: F32) : Bool
   // fun lerp(a: V, b: V, delta: F32) : V
 
-primitive _V2Fun is VectorFun[Vector2 val]
+primitive V2Fun is VectorFun[Vector2 val]
   fun apply(x' : F32, y': F32) : Vector2 => (x',y')
   fun zero() : Vector2 => (0,0)
   fun id() : Vector2 => (1,1)
@@ -109,10 +170,10 @@ primitive _V2Fun is VectorFun[Vector2 val]
   fun dist(a : Vector2, b : Vector2) : F32  => len(sub(a,b))
   fun unit(v : Vector2) : Vector2 => div(v, len(v))
   fun cross(a: Vector2, b: Vector2) : F32 => (a._1*b._2) - (b._1*a._2)
-  fun eq(a: Vector2, b: Vector2, eps: F32) : Bool =>
+  fun eq(a: Vector2, b: Vector2, eps: F32 = F32.epsilon()) : Bool =>
     Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
 
-primitive _V3Fun is VectorFun[Vector3 val]
+primitive V3Fun is VectorFun[Vector3 val]
   fun apply(x' : F32, y': F32, z': F32) : Vector3 => (x',y',z')
   fun zero() : Vector3 => (0,0,0)
   fun id() : Vector3 => (1,1,1)
@@ -133,11 +194,11 @@ primitive _V3Fun is VectorFun[Vector3 val]
         (a._3*b._1) - (a._1*b._3),
         (a._1*b._2) - (a._2*b._1)
        )
-  fun eq(a: Vector3, b: Vector3, eps: F32) : Bool =>
+  fun eq(a: Vector3, b: Vector3, eps: F32 = F32.epsilon()) : Bool =>
     Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
      and Linear.eq(a._3,b._3, eps)
 
-primitive _V4Fun is VectorFun[Vector4 val]
+primitive V4Fun is VectorFun[Vector4 val]
   fun apply(x' : F32, y': F32, z': F32, w': F32) : Vector4 => (x',y',z',w')
   fun zero() : Vector4 => (0,0,0,0)
   fun id() : Vector4 => (1,1,1,1)
@@ -155,11 +216,11 @@ primitive _V4Fun is VectorFun[Vector4 val]
   fun dist2(a : Vector4, b : Vector4) : F32  => len2(sub(a,b))
   fun dist(a : Vector4, b : Vector4) : F32  => len(sub(a,b))
   fun unit(v : Vector4) : Vector4 => div(v, len(v))
-  fun eq(a: Vector4, b: Vector4, eps: F32) : Bool =>
+  fun eq(a: Vector4, b: Vector4, eps: F32 = F32.epsilon()) : Bool =>
    Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
    and Linear.eq(a._3,b._3, eps) and Linear.eq(a._4,b._4, eps)
 
-primitive _M2Fun
+primitive M2Fun
   fun apply(r1: Vector2, r2: Vector2) : Matrix2 => (r1, r2)
   fun zero() : Matrix2 => ((0,0),(0,0))
   fun id() : Matrix2 => ((1,0),(0,1))
@@ -209,13 +270,13 @@ primitive _M2Fun
      ( (((m._1._2 * v._2) - (m._2._2 * v._1)) / ((m._1._2*m._2._1) - (m._1._1*m._2._2))),
       (((m._2._1 * v._1) - (m._1._1 * v._2)) / ((m._1._2*m._2._1) - (m._1._1*m._2._2))))
 
-   fun eq(a: Matrix2, b: Matrix2, eps: F32) : Bool =>
+   fun eq(a: Matrix2, b: Matrix2, eps: F32 = F32.epsilon()) : Bool =>
      Linear.eq(a._1._1, b._1._1, eps) and
      Linear.eq(a._1._2, b._1._2, eps) and
      Linear.eq(a._2._1, b._2._1, eps) and
      Linear.eq(a._2._2, b._2._2, eps)
 
-primitive _M3Fun
+primitive M3Fun
   fun apply(r1: Vector3, r2: Vector3, r3: Vector3) : Matrix3 => (r1, r2, r3)
   fun zero() : Matrix3 => ((0,0,0),(0,0,0),(0,0,0))
   fun id() : Matrix3 => ((1,0,0),(0,1,0),(0,0,1))
@@ -313,7 +374,7 @@ primitive _M3Fun
     	let dz = det(((m._1._1,m._1._2,v._1),(m._2._1,m._2._2,v._2),(m._3._1,m._3._2,v._3)))
     	(dx/d, dy/d, dz/d)
 
-    fun eq(a: Matrix3, b: Matrix3, eps: F32) : Bool =>
+    fun eq(a: Matrix3, b: Matrix3, eps: F32 = F32.epsilon()) : Bool =>
       Linear.eq(a._1._1, b._1._1, eps) and
       Linear.eq(a._1._2, b._1._2, eps) and
       Linear.eq(a._1._3, b._1._3, eps) and
@@ -324,15 +385,14 @@ primitive _M3Fun
       Linear.eq(a._3._2, b._3._2, eps) and
       Linear.eq(a._3._3, b._3._3, eps)
 
-
-primitive _Q4Fun
+primitive Q4Fun
   fun apply(x': F32, y': F32, z': F32, w': F32) : Quaternion => (x',y',z',w')
   fun zero() : Quaternion => (0,0,0,0)
   fun id() :   Quaternion => (0,0,0,1)
 
   fun axis_angle(axis' : Vector3, angle_radians : F32) : Quaternion =>
     let sina = (angle_radians*0.5).sin()
-    (let x, let y, let z) = _V3Fun.mul(_V3Fun.unit(axis'), sina)
+    (let x, let y, let z) = V3Fun.mul(V3Fun.unit(axis'), sina)
     let w = (angle_radians*0.5).cos()
     (x,y,z,w)
 
@@ -354,16 +414,18 @@ primitive _Q4Fun
     let spcy : F64 = sp * cy
     let cpsy : F64 = cp * sy
     let spsy : F64 = sp * sy
-    _V4Fun.unit((((sr * cpcy) - (cr * spsy)).f32(),
+    V4Fun.unit((((sr * cpcy) - (cr * spsy)).f32(),
           ((cr * spcy) + (sr * cpsy)).f32(),
     	    ((cr * cpsy) - (sr * spcy)).f32(),
     	    ((cr * cpcy) + (sr * spsy)).f32()
           ))
 
-  fun add(a: Quaternion, b: Quaternion) : Quaternion => _V4Fun.add(a,b)
-  fun sub(a: Quaternion, b: Quaternion) : Quaternion => _V4Fun.sub(a,b)
-  fun mul(q: Quaternion, s: F32) : Quaternion => _V4Fun.mul(q,s)
-  fun div(q: Quaternion, s: F32) : Quaternion => _V4Fun.div(q,s)
+// convenience aliases
+  fun add(a: Quaternion, b: Quaternion) : Quaternion => V4Fun.add(a,b)
+  fun sub(a: Quaternion, b: Quaternion) : Quaternion => V4Fun.sub(a,b)
+  fun mul(q: Quaternion, s: F32) : Quaternion => V4Fun.mul(q,s)
+  fun div(q: Quaternion, s: F32) : Quaternion => V4Fun.div(q,s)
+  fun eq(a: Quaternion, b: Quaternion) : Bool => V4Fun.eq(a,b)
 
   fun mulq4(a: Quaternion, b: Quaternion) : Quaternion =>
     	(((a._4 * b._1) + (a._1 * b._4) + (a._2 * b._3)) - (a._3 * b._2),
@@ -374,7 +436,7 @@ primitive _Q4Fun
   fun divq4(a: Quaternion, b: Quaternion) : Quaternion => mulq4(a, inv(b))
 
   fun dot(a: Quaternion, b: Quaternion) : F32 =>
-    _V3Fun.dot((a._1,a._2,a._3), (b._1,b._2,b._3)) + (a._4 * b._4)
+    V3Fun.dot((a._1,a._2,a._3), (b._1,b._2,b._3)) + (a._4 * b._4)
 
   fun len2(q: Quaternion) : F32 => dot(q,q)
   fun len(q: Quaternion) : F32 => dot(q,q).sqrt()
@@ -385,7 +447,7 @@ primitive _Q4Fun
   fun angle(q: Quaternion) : F32 => (q._4 / len(q)).acos()
   fun axis(q: Quaternion) : Vector3 =>
     (let x, let y, let z, let w) = unit(q)
-    _V3Fun.div((x,y,z), (q._4.acos()).sin())
+    V3Fun.div((x,y,z), (q._4.acos()).sin())
 
   fun axis_x(q: Quaternion) : F32 =>
     let ii = (q._1*q._2 *2) + (q._3*q._4)
@@ -397,11 +459,11 @@ primitive _Q4Fun
     let yy = ((q._4*q._4) - (q._1*q._1) - (q._2*q._2)) + (q._3*q._3)
     ii.atan2(yy)
 
-  fun axis_x(q: Quaternion) : F32 =>
+  fun axis_z(q: Quaternion) : F32 =>
     let ii = ((q._1*q._3) - (q._4*q._2)) * -2
     ii.asin()
 
   fun rotv3(q: Quaternion, v: Vector3) : Vector3 =>
-    let t = _V3Fun.mul(_V3Fun.cross((q._1,q._2,q._3), v), 2)
-    let p = _V3Fun.cross((q._1,q._2,q._3), t)
-    _V3Fun.add(_V3Fun.add(_V3Fun.mul(t, q._4), v), p)
+    let t = V3Fun.mul(V3Fun.cross((q._1,q._2,q._3), v), 2)
+    let p = V3Fun.cross((q._1,q._2,q._3), t)
+    V3Fun.add(V3Fun.add(V3Fun.mul(t, q._4), v), p)
