@@ -121,7 +121,7 @@ primitive Linear
       | let v : Quaternion => _svec(v, 4)
       | let m : Matrix2 => _smat(vec4(m._1), vec4(m._2) where n=2 )
       | let m : Matrix3 => _smat(vec4(m._1), vec4(m._2), vec4(m._3) where n=3)
-      | let m : Matrix4 => _smat(vec4(m._1), vec4(m._2), vec4(m._3), vec4(m._4), 4)
+      | let m : Matrix4 => _smat(m._1, m._2, m._3, m._4, 4)
       else "None".string()
       end
 
@@ -191,14 +191,9 @@ primitive V3Fun is VectorFun[Vector3 val]
   fun dist(a : Vector3, b : Vector3) : F32  => len(sub(a,b))
   fun unit(v : Vector3) : Vector3 => div(v, len(v))
   fun cross(a: Vector3, b: Vector3) : Vector3 =>
-      (
-        (a._2*b._3) - (a._3*b._2),
-        (a._3*b._1) - (a._1*b._3),
-        (a._1*b._2) - (a._2*b._1)
-       )
+    ((a._2*b._3) - (a._3*b._2), (a._3*b._1) - (a._1*b._3), (a._1*b._2) - (a._2*b._1))
   fun eq(a: Vector3, b: Vector3, eps: F32 = F32.epsilon()) : Bool =>
-    Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
-     and Linear.eq(a._3,b._3, eps)
+    Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps) and Linear.eq(a._3,b._3, eps)
 
 primitive V4Fun is VectorFun[Vector4 val]
   fun apply(x' : F32, y': F32, z': F32, w': F32) : Vector4 => (x',y',z',w')
