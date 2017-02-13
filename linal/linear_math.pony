@@ -92,6 +92,7 @@ primitive Linear
         end
         s.push(')')
         s.recalc()
+        s
       end
 
     fun _svec(v: Vector4, n: USize) : String iso^ =>
@@ -111,6 +112,7 @@ primitive Linear
         end
         s.push(')')
         s.recalc()
+        s
       end
 
     fun to_string(o: (Quaternion | Matrix2 | Matrix3 | Matrix4 | OptVector)) : String iso^ =>
@@ -165,7 +167,6 @@ primitive V2Fun is VectorFun[Vector2 val]
   fun div(v: Vector2, s: F32)  : Vector2  => (v._1 / s, v._2 / s)
   fun dot(a: Vector2, b: Vector2) : F32 => (a._1 * b._1) + (a._2 * b._2)
 
-// TODO: perhaps write these out longhand to reduce number of tuples on stack
   fun len2(v: Vector2) : F32 => dot(v,v)
   fun len(v: Vector2) : F32 => dot(v,v).sqrt()
   fun dist2(a : Vector2, b : Vector2) : F32  => len2(sub(a,b))
