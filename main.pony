@@ -48,15 +48,23 @@ actor Main
         let v3 = Linear.vec3fun()
 
         let p1 = (F32(1),F32(1))
-        let p2 : Vector2 = (3,3)
+        let p2 : V2 = (3,3)
         let p3 = v2.add(p1,p2)
 
+        let p4 : FixVector = Vector2(v2.add(p1, v2.mul(p2, 1.5))) + V2fun(2,3)
+
+        let a1 : Vector2 = Vector2((1,2))
+        var a2 : Vector2 = Vector2((3,4))
+        let a3 = a1 - a2
+        a2() = a3
+        pc.set_position(Linear.vec3(p4))
+        env.out.print("Out "+ pc.string())
         let dist = v2.dist(v3.vec2(pc.position()), p3)
-        let p4 = v2.add(p1, v2.mul(p2, 1.5))
+        env.out.print("Dist "+ a2.string())
+        let ar : V2 val =  V2fun(-2,-2)
+        let bool = a2 == ar
 
-        pc.set_position(p4)
-        env.out.print("Out"+ pc.string())
-
+env.out.print("-2 "+ bool.string())
     //
     // fun ref arguments() ? =>
     //   var options = Options(_env.args)
