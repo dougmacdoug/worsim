@@ -2,9 +2,9 @@ use "net"
 
 class Ping is UDPNotify
   let _env: Env
-  let _ip: IPAddress
+  let _ip: NetAddress
 
-  new create(env: Env, ip: IPAddress) =>
+  new create(env: Env, ip: NetAddress) =>
     _env = env
     _ip = ip
 
@@ -22,7 +22,7 @@ class Ping is UDPNotify
     _env.out.print("Ping: not listening")
     sock.dispose()
 
-  fun ref received(sock: UDPSocket ref, data: Array[U8] iso, from: IPAddress)
+  fun ref received(sock: UDPSocket ref, data: Array[U8] iso, from: NetAddress)
   =>
     try
       (let host, let service) = from.name()
@@ -66,7 +66,7 @@ class Ping is UDPNotify
         _env.out.print("Pong: not listening")
         sock.dispose()
 
-      fun ref received(sock: UDPSocket ref, data: Array[U8] iso, from: IPAddress)
+      fun ref received(sock: UDPSocket ref, data: Array[U8] iso, from: NetAddress)
       =>
         try
           (let host, let service) = from.name()
@@ -81,32 +81,32 @@ class Ping is UDPNotify
         _env.out.print("Pong: closed")
 
 
-class ServerSide is TCPConnectionNotify
-          let _env: Env
+// class ServerSide is TCPConnectionNotify
+//           let _env: Env
 
-          new iso create(env: Env) =>
-            _env = env
+//           new iso create(env: Env) =>
+//             _env = env
 
-          fun ref accepted(conn: TCPConnection ref) =>
-            try
-              (let host, let service) = conn.remote_address().name()
-              _env.out.print("accepted from " + host + ":" + service)
-              conn.write("server says hi")
-            end
+//           fun ref accepted(conn: TCPConnection ref) =>
+//             try
+//               (let host, let service) = conn.remote_address().name()
+//               _env.out.print("accepted from " + host + ":" + service)
+//               conn.write("server says hi")
+//             end
 
-          fun ref received(conn: TCPConnection ref, data: Array[U8] iso): Bool =>
-            _env.out.print(consume data)
-            conn.dispose()
-            true
+//           fun ref received(conn: TCPConnection ref, data: Array[U8] iso): Bool =>
+//             _env.out.print(consume data)
+//             conn.dispose()
+//             true
 
-          fun ref closed(conn: TCPConnection ref) =>
-            _env.out.print("server closed")
+//           fun ref closed(conn: TCPConnection ref) =>
+//             _env.out.print("server closed")
 
-actor Server
- let _s : ServerSide iso
+// actor Server
+//  let _s : ServerSide iso
 
- new create(env : Env) =>
-   _s = ServerSide(env)
+//  new create(env : Env) =>
+//    _s = ServerSide(env)
 
-   be start() =>
-     None
+//    be start() =>
+//      None

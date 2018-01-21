@@ -3,42 +3,60 @@
 **/
 use "net"
 use "options"
+use "linal"
 //primitive STRING_KEY : "str"
 
-class MyUDPNotify is UDPNotify
-  let _env : Env
+// class MyUDPNotify is UDPNotify
+//   let _env : Env
 
-  new create(env: Env) => _env = env
+//   new create(env: Env) => _env = env
 
-  fun ref received(sock: UDPSocket ref, data: Array[U8] iso, from: IPAddress)
-  =>
-    _env.out.print("Got " + data.size().string() + " bytes")
-    if data.size() > 0 then
-       try data.pop() end // newline
-    end
-    let valArray: Array[U8 val] val = consume data
-    for  a in valArray.values() do
-       _env.out.print(a.string())
-    end
+//   fun ref received(sock: UDPSocket ref, data: Array[U8] iso, from: NetAddress)
+//   =>
+//     _env.out.print("Got " + data.size().string() + " bytes")
+//     if data.size() > 0 then
+//        try data.pop() end // newline
+//     end
+//     let valArray: Array[U8 val] val = consume data
+//     for  a in valArray.values() do
+//        _env.out.print(a.string())
+//     end
 
-    sock.write(valArray, from)
+//     sock.write(valArray, from)
 
 actor Main
   var _a_string: String = "default"
   var _a_number: USize = 0
   var _a_float: Float = F64(0.0)
   new create(env: Env) =>
-    try
-      UDPSocket(env.root as AmbientAuth,
-        recover  MyUDPNotify(env) end, "", "8989")
-    end
-    //   _env = env
-    //   try
-    //     arguments()
-    //   end
-    //   _env.out.print("The String is " + _a_string)
-    //   _env.out.print("The Number is " + _a_number.string())
-    //   _env.out.print("The Float is " + _a_float.string())
+    // try
+    //   UDPSocket(env.root as AmbientAuth,
+    //     recover  MyUDPNotify(env) end, "", "8989")
+    // end
+      // try
+      //   arguments()
+      // end
+      env.out.print("The String is " + _a_string)
+      env.out.print("The Number is " + _a_number.string())
+      env.out.print("The Float is " + _a_float.string())
+
+      let e : Entity = Entity
+      e.test_stuff()
+        let pc : PostionComponent = PostionComponent
+
+        let v2 = Linear.vec2fun()
+        let v3 = Linear.vec3fun()
+
+        let p1 = (F32(1),F32(1))
+        let p2 : Vector2 = (3,3)
+        let p3 = v2.add(p1,p2)
+
+        let dist = v2.dist(v3.vec2(pc.position()), p3)
+        let p4 = v2.add(p1, v2.mul(p2, 1.5))
+
+        pc.set_position(p4)
+        env.out.print("Out"+ pc.string())
+
     //
     // fun ref arguments() ? =>
     //   var options = Options(_env.args)

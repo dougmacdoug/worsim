@@ -14,7 +14,7 @@ class iso _TestVector is UnitTest
     fun apply(h: TestHelper) =>
       let v2 = Linear.vec2fun() // gives us nice shorthand to Vector2 Functions
       let pt_a = (F32(1),F32(1))
-      let pt_b : Vector2 = (3,3)
+      let pt_b : V2 = (3,3)
       let d = v2.dist(pt_a,pt_b)
       h.assert_true(Linear.eq(2.828, d, 0.001))
 

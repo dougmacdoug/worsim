@@ -1,2 +1,7 @@
 out/
 target/
+*.exe
+*.ilk
+*.pdb
+*.sublime-project
+*.sublime-workspace
