@@ -55,12 +55,15 @@ actor Main
 
         let a1 : Vector2 = Vector2((1,2))
         var a2 : Vector2 = Vector2((3,4))
+        var b4 : Vector4 = Vector4(a2.v4())
         let a3 = a1 - a2
         a2() = a3
+        b4() = b4 + V4fun(1,2,3,4)
         pc.set_position(Linear.vec3(p4))
         env.out.print("Out "+ pc.string())
         let dist = v2.dist(v3.vec2(pc.position()), p3)
         env.out.print("Dist "+ a2.string())
+        env.out.print("b4 "+ b4.string())
         let ar : V2 val =  V2fun(-2,-2)
         let bool = a2 == ar
 

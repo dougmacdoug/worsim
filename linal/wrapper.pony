@@ -1,7 +1,8 @@
-type AnyVector is (FixVector | Vector2)
-type AnyVector2 is (Vector2 | V2)
-type AnyVector3 is (Vector3 | V3)
-type AnyVector4 is (Vector4 | V4)
+
+// @Hack VectorX is Vector[VX] but compiler requires both in the alias
+type AnyVector2 is (Vector2 | Vector[V2] | V2) 
+type AnyVector3 is (Vector3 | Vector[V3] | V3)
+type AnyVector4 is (Vector4 | Vector[V4] | V4)
 
 """
 @author macdougall.doug@gmail.com
@@ -21,70 +22,125 @@ Example:
   let d = V2fun.add(a, b) // a + b
   let f = V2fun.mul(V2fun.unit(d), 5) // scale to 5 units
 
+@Note: initially designed classes to be assignable from any vector but
+this could lead to errors which are meant to be found by strongly typed 
+languages. if you need to resize and copy a vector use a new constructor
+on the appropriate vector
+
+  let p2 = Vector2((5,3))    // construct from tuple
+  let p2' = Vector2(p2)      // construct from instance
+  let p3 = Vector3((5,3,1))  // construct from tuple
+  let p3' = Vector3(p2.v3()) // upsize (z=0)
+  let p2x = Vector2(p3.v2()) // downsize (z chomped)
 
 """
-trait Vector[V, Vx] is Stringable
+// @Hack tuples dont work for subtypes so using Any instead of FixVector
+trait Vector[V : Any #read] is (Stringable & Equatable[Vector[V val]])
   fun v2() : V2
   fun v3() : V3
   fun v4() : V4
+  fun vecfun() : VectorFun[V val] val
+  fun as_tuple() : V
+  fun add(that: (Vector[V] box | V)) : V => 
+    let mine : V = as_tuple()
+    match that
+    | let v: Vector[V] box => vecfun().add(mine, v.as_tuple())
+    | let v: V =>      vecfun().add(mine, v)
+    end
+  fun sub(that: (Vector[V] box | V)) : V => 
+    let mine : V = as_tuple()
+    match that
+    | let v: Vector[V] box => vecfun().sub(mine, v.as_tuple())
+    | let v: V =>      vecfun().sub(mine, v)
+    end
 
-  fun add(a : (V|Vx)) : FixVector 
-  // fun sub(a : AnyVector) : FixVector 
-  fun ref update(value: AnyVector)
-  fun box eq(that: (V box|Vx box)) : Bool val 
+  fun ref update(value: (Vector[V] | V))
 
-class Vector3
-class Vector4
+  fun eq(that: (box->Vector[V]|V)) : Bool  => 
+    let mine : V = as_tuple()
+    match that
+    | let v : Vector[V] box  => vecfun().eq(mine, v.as_tuple(), F32.epsilon())
+    | let v : V =>
+      vecfun().eq(mine, v, F32.epsilon())
+    end
 
-class Vector2  is (Vector[Vector2, V2])
+  fun ne(that: (box->Vector[V]|V)) : Bool => not eq(that)
+
+class Vector2 is Vector[V2]
   var _x : F32
   var _y : F32
 
-  new create(v' : AnyVector) => 
+  new create(v' : AnyVector2) => 
     (_x, _y) = match v'
-    | let v : Vector2 => v.v2()
+    | let v : Vector[V2] box => v.as_tuple()
     | let v : V2 => v
-    | let v : V3 => (v._1, v._2)
-    | let v : V4 => (v._1, v._2)
     end
+
+  fun vecfun() : VectorFun[V2 val] val => V2fun
+  fun as_tuple() : V2 => (_x, _y)
 
   fun v2() : V2 => (_x, _y)
   fun v3() : V3 => (_x, _y, 0)
   fun v4() : V4 => (_x, _y, 0, 0)
 
-  fun add(that: AnyVector2) : FixVector => 
-    match that
-    | let v: Vector2 => V2fun.add((_x, _y), (v._x, v._y))
-    // | let v: Vector =>  V2fun.add((_x, _y), v.v2())
-    | let v: V2 =>      V2fun.add((_x, _y), v)
-    // | let v: V3 =>      V3fun.add((_x, _y, 0), v)
-    // | let v: V4 =>      V4fun.add((_x, _y, 0, 0), v)
-    end
-
-  fun sub(that: AnyVector) : FixVector => 
-    match that
-    | let v: Vector2 => V2fun.sub((_x, _y), (v._x, v._y))
-    // | let v: Vector =>  V2fun.sub((_x, _y), v.v2())
-    | let v: V2 =>      V2fun.sub((_x, _y), v)
-    | let v: V3 =>      V3fun.sub((_x, _y, 0), v)
-    | let v: V4 =>      V4fun.sub((_x, _y, 0, 0), v)
-    end
-
-  fun ref update(value: AnyVector)  => 
+  fun ref update(value: AnyVector2)  => 
     (_x, _y) = match value
-    | let v : Vector2 => v.v2()
-    | let v : FixVector => Linear.vec2(v)
+    | let v : Vector[V2] box => v.as_tuple()
+    | let v : V2 => v
     end
 
-  fun box eq(that: (Vector2 box|V2 box)) : Bool val => 
-    match that
-    | let v : Vector2 box  => V2fun.eq((_x, _y), v.v2())
-    | let v : V2 box  =>
-      V2fun.eq((_x, _y), (v._1+0,v._2+0))
-    // | let v : Vector3 box  => V2fun.eq((_x, _y), v.v2()) and (v._z == 0)
-    // | let v : Vector3 box  => V2fun.eq((_x, _y), v.v2()) and (v._z == 0)and (v._w == 0)
+  fun box string() : String iso^ => Linear.to_string(as_tuple())
+
+
+class Vector3 is Vector[V3]
+  var _x : F32
+  var _y : F32
+  var _z : F32
+
+  new create(v' : AnyVector3) => 
+    (_x, _y, _z) = match v'
+    | let v : Vector[V3] box => v.as_tuple()
+    | let v : V3 => v
     end
 
-  fun box ne(that: (Vector2 box|V2 box)) : Bool val => not eq(that)
+  fun vecfun() : VectorFun[V3 val] val => V3fun
+  fun as_tuple() : V3 => (_x, _y, _z)
 
-  fun box string() : String iso^ => Linear.to_string((_x, _y))
+  fun v2() : V2 => (_x, _y)
+  fun v3() : V3 => (_x, _y, _z)
+  fun v4() : V4 => (_x, _y, _z, 0)
+
+  fun ref update(value: AnyVector3)  => 
+    (_x, _y, _z) = match value
+    | let v : Vector[V3] box => v.as_tuple()
+    | let v : V3 => v
+    end
+
+  fun box string() : String iso^ => Linear.to_string(as_tuple())
+
+class Vector4 is Vector[V4]
+  var _x : F32
+  var _y : F32
+  var _z : F32
+  var _w : F32
+
+  new create(v' : AnyVector4) => 
+    (_x, _y, _z, _w) = match v'
+    | let v : Vector[V4] box => v.as_tuple()
+    | let v : V4 => v
+    end
+
+  fun vecfun() : VectorFun[V4 val] val => V4fun
+  fun as_tuple() : V4 => (_x, _y, _z, _w)
+
+  fun v2() : V2 => (_x, _y)
+  fun v3() : V3 => (_x, _y, _z)
+  fun v4() : V4 => (_x, _y, _z, _w)
+
+  fun ref update(value: AnyVector4)  => 
+    (_x, _y, _z, _w) = match value
+    | let v : Vector[V4] box => v.as_tuple()
+    | let v : V4 => v
+    end
+
+  fun string() : String iso^ => Linear.to_string(as_tuple())
