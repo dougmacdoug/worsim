@@ -20,18 +20,24 @@ class MyUDPNotify is UDPNotify
     for  a in valArray.values() do
        _env.out.print(a.string())
     end
-
     sock.write(valArray, from)
 
 actor Main
   var _a_string: String = "default"
   var _a_number: USize = 0
   var _a_float: Float = F64(0.0)
+  let em : EntityManager val
   new create(env: Env) =>
-    try
-      UDPSocket(env.root as AmbientAuth,
-        recover  MyUDPNotify(env) end, "", "8989")
-    end
+    env.out.print("test")
+    let em' = EntityManager(env)
+    em = consume em'
+    em.move()
+
+    // try
+    //   UDPSocket(env.root as AmbientAuth,
+    //     recover  MyUDPNotify(env) end, "", "8989")
+    // end
+
     //   _env = env
     //   try
     //     arguments()

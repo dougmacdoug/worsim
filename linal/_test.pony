@@ -8,6 +8,16 @@ actor Main is TestList
     test(_TestVector)
     test(_TestQuaternion)
 
+class Thing
+  let _name: String
+  let _cost: I64
+  new create(name: String val = "" , cost: I64 val= 0 ) =>
+    _name = name
+    _cost = cost
+  fun val name(): String => _name
+  fun cost(): I64 => _costls
+
+
 class iso _TestVector is UnitTest
     fun name():String => "linal/vector"
 
@@ -16,6 +26,7 @@ class iso _TestVector is UnitTest
       let pt_a = (F32(1),F32(1))
       let pt_b : Vector2 = (3,3)
       let d = v2.dist(pt_a,pt_b)
+      let th = Thing("bob",244)
       h.assert_true(Linear.eq(2.828, d, 0.001))
 
 class iso _TestQuaternion is UnitTest
@@ -25,57 +36,57 @@ class iso _TestQuaternion is UnitTest
       let eps = F32.epsilon()
       let v3 = Linear.vec3fun() // gives us nice shorthand to Vector3 Functions
       let v4 = Linear.vec4fun() // gives us nice shorthand to Vector4 Functions
-      let q4 = Linear.quatfun() // gives us nice shorthand to Quaternion Functions
+      let quat = Linear.quatfun() // gives us nice shorthand to Quaternion Functions
 
-      h.assert_eq[F32](q4.len(q4.unit(q4.zero())), eps)
-      var a = q4(0,0,0,2)
+      h.assert_eq[F32](quat.len(quat.unit(quat.zero())), eps)
+      var a = quat(0,0,0,2)
       var b : Quaternion
       var result : Quaternion
-      h.assert_eq[F32](2,  q4.len(a))
+      h.assert_eq[F32](2,  quat.len(a))
 
-      let qi = q4(1,0,0,0)
-      let qj = q4(0,1,0,0)
-      let qk = q4(0,0,1,0)
-      let q_one = q4.id()
+      let qi = quat(1,0,0,0)
+      let qj = quat(0,1,0,0)
+      let qk = quat(0,0,1,0)
+      let q_one = quat.id()
 
-      h.assert_eq[F32](1,  q4.len(qi))
-      h.assert_eq[F32](1,  q4.len(qj))
-      h.assert_eq[F32](1,  q4.len(qk))
-      h.assert_eq[F32](1,  q4.len(q_one))
+      h.assert_eq[F32](1,  quat.len(qi))
+      h.assert_eq[F32](1,  quat.len(qj))
+      h.assert_eq[F32](1,  quat.len(qk))
+      h.assert_eq[F32](1,  quat.len(q_one))
 
-      h.assert_true(v4.eq(q4.mulq4(qi,qj), qk))
-      h.assert_true(v4.eq(q4.mulq4(qi,qi), v4.neg(q_one)))
-      h.assert_true(v4.eq(q4.mulq4(qi,qk), v4.neg(qj)))
-      h.assert_true(v4.eq(q4.mulq4(qj,qi), v4.neg(qk)))
-      h.assert_true(v4.eq(q4.mulq4(qj,qj), v4.neg(q_one)))
-      h.assert_true(v4.eq(q4.mulq4(qj,qk), qi))
-      h.assert_true(v4.eq(q4.mulq4(qk,qi), qj))
-      h.assert_true(v4.eq(q4.mulq4(qk,qj), v4.neg(qi)))
-      h.assert_true(v4.eq(q4.mulq4(qk,qk), v4.neg(q_one)))
-      h.assert_true(v4.eq(q4.mulq4(q4.mulq4(qi,qj), qk), v4.neg(q_one)))
+      h.assert_true(v4.eq(quat.mulq4(qi,qj), qk))
+      h.assert_true(v4.eq(quat.mulq4(qi,qi), v4.neg(q_one)))
+      h.assert_true(v4.eq(quat.mulq4(qi,qk), v4.neg(qj)))
+      h.assert_true(v4.eq(quat.mulq4(qj,qi), v4.neg(qk)))
+      h.assert_true(v4.eq(quat.mulq4(qj,qj), v4.neg(q_one)))
+      h.assert_true(v4.eq(quat.mulq4(qj,qk), qi))
+      h.assert_true(v4.eq(quat.mulq4(qk,qi), qj))
+      h.assert_true(v4.eq(quat.mulq4(qk,qj), v4.neg(qi)))
+      h.assert_true(v4.eq(quat.mulq4(qk,qk), v4.neg(q_one)))
+      h.assert_true(v4.eq(quat.mulq4(quat.mulq4(qi,qj), qk), v4.neg(q_one)))
 
-      a = q4(0.0, 2.0, 0.0, 0)
+      a = quat(0.0, 2.0, 0.0, 0)
       h.log("a=" + Linear.to_string(a))
-      b = q4(1.0, 0.0, 3.0, 0)
+      b = quat(1.0, 0.0, 3.0, 0)
       h.log("b=" + Linear.to_string(b))
-      let axb = q4.mulq4(a,b)
+      let axb = quat.mulq4(a,b)
       h.log("axb=" + Linear.to_string(axb))
       let dot_product = axb._4
       h.assert_eq[F32](0, dot_product)
       let cross_product = v3(axb._1, axb._2, axb._3)
       h.assert_true(v3.eq(v3(6,0,-2), cross_product))
 
-      a = q4(1, 2, 3, 4)
-      b = q4.div(q4.conj(a), v4.len2(a))
-      h.assert_true(q4.eq(q4.inv(a), b))
+      a = quat(1, 2, 3, 4)
+      b = quat.div(quat.conj(a), v4.len2(a))
+      h.assert_true(quat.eq(quat.inv(a), b))
 
-      a = q4(2, 0, 0, 0)
-      h.assert_true(q4.eq(q4.inv(a), q4(-0.5, 0, 0, 0)))
+      a = quat(2, 0, 0, 0)
+      h.assert_true(quat.eq(quat.inv(a), quat(-0.5, 0, 0, 0)))
 
-      a = q4(2, 3, 4, 1)
+      a = quat(2, 3, 4, 1)
       h.log("a=" + Linear.to_string(a))
-      b = q4(3, 4, 5, 2)
+      b = quat(3, 4, 5, 2)
       h.log("b=" + Linear.to_string(b))
-      result = q4.mulq4(a,b)
+      result = quat.mulq4(a,b)
       h.log("r=" + Linear.to_string(result))
-      h.assert_true(q4.eq(result, q4(6, 12, 12, -36)))
+      h.assert_true(quat.eq(result, quat(6, 12, 12, -36)))
