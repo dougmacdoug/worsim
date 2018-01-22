@@ -44,8 +44,8 @@ actor Main
       e.test_stuff()
         let pc : PostionComponent = PostionComponent
 
-        let v2 = Linear.vec2fun()
-        let v3 = Linear.vec3fun()
+        let v2 = Linear.v2fun()
+        let v3 = Linear.v3fun()
 
         let p1 = (F32(1),F32(1))
         let p2 : V2 = (3,3)
@@ -59,7 +59,7 @@ actor Main
         let a3 = a1 - a2
         a2() = a3
         b4() = b4 + V4fun(1,2,3,4)
-        pc.set_position(Linear.vec3(p4))
+        pc.set_position(Linear.v3(p4))
         env.out.print("Out "+ pc.string())
         let dist = v2.dist(pc.position().v2(), p3)
         env.out.print("Dist "+ a2.string())

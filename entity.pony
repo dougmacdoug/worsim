@@ -24,8 +24,8 @@ actor Entity
     _id = id
 
   be test_stuff() =>
-    let v2 = Linear.vec2fun()
-    let v3 = Linear.vec3fun()
+    let v2 = Linear.v2fun()
+    let v3 = Linear.v3fun()
 
     let p1 = (F32(1),F32(1))
     let p2 : V2 = (3,3)
@@ -34,5 +34,5 @@ actor Entity
     let dist = v2.dist(pc.position().v2(), p3)
     let p4 = v2.add(p1, v2.mul(p2, 1.5))
 
-    pc.set_position(Linear.vec3(p4))
+    pc.set_position(Linear.v3(p4))
 

@@ -13,25 +13,25 @@ class iso _TestVector is UnitTest
     fun name():String => "linal/Vector"
 
     fun apply(h: TestHelper) =>
-      let v2 = Linear.vec2fun() // gives us nice shorthand to Vector2 Functions
+      let v2 = Linear.v2fun() // gives us nice shorthand to Vector2 Functions
       let pt_a = (F32(1),F32(1))
       let pt_b : V2 = (3,3)
       let d = v2.dist(pt_a,pt_b)
       h.assert_true(Linear.eq(2.828, d, 0.001))
 
 class iso _TestQuaternion is UnitTest
-    fun name():String => "linal/Quaternion"
+    fun name():String => "linal/Q4"
 
     fun apply(h: TestHelper) =>
       let eps = F32.epsilon()
-      let v3 = Linear.vec3fun() // gives us nice shorthand to Vector3 Functions
-      let v4 = Linear.vec4fun() // gives us nice shorthand to Vector4 Functions
-      let quat = Linear.quatfun() // gives us nice shorthand to Quaternion Functions
+      let v3 = Linear.v3fun() // gives us nice shorthand to Vector3 Functions
+      let v4 = Linear.v4fun() // gives us nice shorthand to Vector4 Functions
+      let quat = Linear.quatfun() // gives us nice shorthand to Q4 Functions
 
       h.assert_eq[F32](quat.len(quat.unit(quat.zero())), eps)
       var a = quat(0,0,0,2)
-      var b : Quaternion
-      var result : Quaternion
+      var b : Q4
+      var result : Q4
       h.assert_eq[F32](2,  quat.len(a))
 
       let qi = quat(1,0,0,0)
