@@ -8,25 +8,15 @@ actor Main is TestList
     test(_TestVector)
     test(_TestQuaternion)
 
-class Thing
-  let _name: String
-  let _cost: I64
-  new create(name: String val = "" , cost: I64 val= 0 ) =>
-    _name = name
-    _cost = cost
-  fun val name(): String => _name
-  fun cost(): I64 => _costls
-
 
 class iso _TestVector is UnitTest
-    fun name():String => "linal/vector"
+    fun name():String => "linal/Vector"
 
     fun apply(h: TestHelper) =>
       let v2 = Linear.vec2fun() // gives us nice shorthand to Vector2 Functions
       let pt_a = (F32(1),F32(1))
-      let pt_b : Vector2 = (3,3)
+      let pt_b : V2 = (3,3)
       let d = v2.dist(pt_a,pt_b)
-      let th = Thing("bob",244)
       h.assert_true(Linear.eq(2.828, d, 0.001))
 
 class iso _TestQuaternion is UnitTest
