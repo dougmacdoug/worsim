@@ -10,14 +10,21 @@
 //   fun eq(that : EntityObject)  : Bool => that._entity is _entity
 //   fun ne(that : EntityObject)  : Bool => that._entity is not _entity
 
-class EntityManager 
-  // let _components : Map[String, Map[U64, EntityComponent]]  = Map[String, Map[U64, EntityComponent]] 
-  let _entities : List[Entity tag]  = List[Entity tag] 
+class EntityManager
+  let _entities : List[Entity] = List[Entity tag]
+  let _env : Env
+  new iso create(env: Env)=>
+    _env = env
+    _env.out.print("Got em")
+    for i in Range(0,10) do
+      _entities.push(Entity(i.u64()))
+    end
 
-  new create() =>
-  for e in _entities.values() do
-//    try 
-      let ent = e
-       // let ec:EntityComponent = _components("Position")(U64(123))
-  //   end
-  end
+   fun val move() =>
+    for node in _entities.nodes() do
+      try
+        let entity = node() ?
+        // entity.ping(this)
+      end
+    end
+  fun val pong(e: Entity tag) => _env.out.print("pong" )

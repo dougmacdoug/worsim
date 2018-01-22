@@ -1,40 +1,38 @@
 use "linal"
-use "collections"
 
-class EntityManager
-  let _entities : List[Entity] = List[Entity tag]
-  let _env : Env
-  new iso create(env: Env)=>
-    _env = env
-    _env.out.print("Got em")
-    for i in Range(0,10) do
-      _entities.push(Entity(i.u32()))
-    end
 
-   fun val move() =>
-    for node in _entities.nodes() do
-      try
-        let entity = node()
-        entity.ping(this)
-      end
-    end
-  fun val pong(e: Entity tag) => _env.out.print("pong" )
-interface State
 
-actor Entity is State
-  var _x : F32 = 0
-  var _y : F32 = 0
-  var _z : F32 = 0
+trait EntityComponent
+  fun name() : String
 
-  let id : U32
-  new create(id': U32) =>id=id'
+class PostionComponent is (Stringable & EntityComponent)
+  let _p : Vector3 = Vector3((0,0,0))
 
-  fun position() : Vector3 => (_x,_y,_z)
-  fun ref _set_position(v : Vector3) => (_x, _y, _z) = v
+  fun ref set_position(v : V3) => 
+    _p() = v
 
-  be update(s: State val) =>
-    None
+  fun box name() : String => "Position"
 
-  be ping(em: EntityManager val) =>
-    _set_position((1,2,id.f32()))
-    em.pong(this)
+  fun box position() : Vector3 box => _p
+
+  fun string() : String iso^ => _p.string()
+
+actor Entity
+  let pc : PostionComponent = PostionComponent
+  let _id : U64
+  new create(id : U64) => 
+    _id = id
+
+  be test_stuff() =>
+    let v2 = Linear.vec2fun()
+    let v3 = Linear.vec3fun()
+
+    let p1 = (F32(1),F32(1))
+    let p2 : V2 = (3,3)
+    let p3 = v2.add(p1,p2)
+
+    let dist = v2.dist(pc.position().v2(), p3)
+    let p4 = v2.add(p1, v2.mul(p2, 1.5))
+
+    pc.set_position(Linear.vec3(p4))
+

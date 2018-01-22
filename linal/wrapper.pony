@@ -39,10 +39,10 @@ trait Vector[V : Any #read] is (Stringable & Equatable[Vector[V val]])
   fun v2() : V2
   fun v3() : V3
   fun v4() : V4
-  fun x() : F32
-  fun y() : F32
-  fun z() : F32
-  fun w() : F32
+  fun x()  : F32 ?
+  fun y() : F32 ?
+  fun z() : F32 ?
+  fun w() : F32 ?
 
   fun vecfun() : VectorFun[V val] val
   fun as_tuple() : V
@@ -84,8 +84,8 @@ class Vector2 is Vector[V2]
 
   fun x() : F32 => _x
   fun y() : F32 => _y
-  fun z() : F32 => error
-  fun w() : F32 => error
+  fun z() : F32 ? => error
+  fun w() : F32 ? => error
   fun as_array() : Array[F32] val => [_x; _y]
   fun vecfun() : VectorFun[V2 val] val => V2fun
   fun as_tuple() : V2 => (_x, _y)
@@ -117,7 +117,7 @@ class Vector3 is Vector[V3]
   fun x() : F32 => _x
   fun y() : F32 => _y
   fun z() : F32 => _z
-  fun w() : F32 => error
+  fun w() : F32 ? => error
   fun as_array() : Array[F32] val => [_x; _y; _z]
 
   fun vecfun() : VectorFun[V3 val] val => V3fun
