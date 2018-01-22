@@ -61,7 +61,7 @@ actor Main
         b4() = b4 + V4fun(1,2,3,4)
         pc.set_position(Linear.vec3(p4))
         env.out.print("Out "+ pc.string())
-        let dist = v2.dist(v3.vec2(pc.position()), p3)
+        let dist = v2.dist(pc.position().v2(), p3)
         env.out.print("Dist "+ a2.string())
         env.out.print("b4 "+ b4.string())
         let ar : V2 val =  V2fun(-2,-2)

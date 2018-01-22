@@ -5,34 +5,18 @@ use "linal"
 trait EntityComponent
   fun name() : String
 
-class PostionComponent is EntityComponent
-  var _p : V3 = (0,0,0)
+class PostionComponent is (Stringable & EntityComponent)
+  let _p : Vector3 = Vector3((0,0,0))
 
-  fun ref set_position(v : (V2|V3)) => _p = Linear.vec3(v)
+  fun ref set_position(v : V3) => 
+    _p() = v
 
   fun box name() : String => "Position"
 
-  fun box position() : V3 => _p
+  fun box position() : Vector3 box => _p
 
-  fun string() : String   // iso^
-  =>_p._1.string() + "," + _p._2.string() + "," + _p._3.string()
-    // =>recover
-    //     var s = String(600)
-    //     s.push('(')
-    //     s.append(VFun3._svec(a, n))
-    //     s.push(',')
-    //     s.append(_svec(b, n))
-    //     if n > 2 then
-    //       s.push(',')
-    //       s.append(_svec(c, n))
-    //       if n > 3 then
-    //         s.push(',')
-    //         s.append(_svec(d, n))
-    //       end
-    //     end
-    //     s.push(')')
-    //     s.recalc()
-    //   end
+  fun string() : String iso^ => _p.string()
+
 actor Entity
   let pc : PostionComponent = PostionComponent
   new create() => 
@@ -46,8 +30,8 @@ actor Entity
     let p2 : V2 = (3,3)
     let p3 = v2.add(p1,p2)
 
-    let dist = v2.dist(v3.vec2(pc.position()), p3)
+    let dist = v2.dist(pc.position().v2(), p3)
     let p4 = v2.add(p1, v2.mul(p2, 1.5))
 
-    pc.set_position(p4)
+    pc.set_position(Linear.vec3(p4))
 
