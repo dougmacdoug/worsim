@@ -44,8 +44,8 @@ actor Main
       e.test_stuff()
         let pc : PostionComponent = PostionComponent
 
-        let v2 = Linear.v2fun()
-        let v3 = Linear.v3fun()
+        let v2 = V2fun
+        let v3 = V3fun
 
         let p1 = (F32(1),F32(1))
         let p2 : V2 = (3,3)

@@ -1,9 +1,11 @@
 """
-@author macdougall.doug@gmail.com
+# Linear Algebra Pony Package
 
-Tuple-based Linear Algebra for typical 2d, 3d operations
+Tuple-based Linear Algebra for typical 2d, 3d operations  
   - operate on the stack
   - 100% immutable
+  - float32 internals (F32)
+
 
 Each TYPE consists of a type alias and a primitive behaving similar to a "class"
  - A type alias to a tuple (similar to class state data)
@@ -27,4 +29,8 @@ Example:
    * try to use compile time expressions once adopted by pony
        fun inv(q: Q4) : Q4 => #( div(conj(q), dot(q,q)) )
    * consider writing longhand
+
+@author macdougall.doug@gmail.com
+Copyright @author 2017-2018
+All Rights Reserved.
 """

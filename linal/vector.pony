@@ -1,9 +1,131 @@
+type V2 is (F32, F32)
+""" tuple based Vector2 alias"""
+type V3 is (F32, F32, F32)
+""" tuple based Vector3 alias"""
+type V4 is (F32, F32, F32, F32)
+""" tuple based Vector4 alias"""
+type FixVector  is (V2 | V3 | V4)
+""" tuple based Vector alias"""
+// @TODO: consider removing.. not particularly useful
+type OptVector is (FixVector | None)
+""" tuple based Vector or None alias"""
 
 // @Hack VectorX is Vector[VX] but compiler requires both in the alias
 type AnyVector2 is (Vector2 | Vector[V2] | V2) 
+"""instance | tuple vector 2 alias"""
 type AnyVector3 is (Vector3 | Vector[V3] | V3)
+"""instance | tuple vector 3 alias"""
 type AnyVector4 is (Vector4 | Vector[V4] | V4)
+"""instance | tuple vector 4 alias"""
 
+// cannot use tuple as constraint
+// trait primarily used for code validation
+trait VectorFun[V /*: Vector */]
+"""Trait defining tuple based vector functions"""
+  fun zero() : V
+  fun id() : V
+  fun add(a: V, b: V) : V
+  fun sub(a: V, b: V) : V
+  fun neg(v: V) : V
+  fun mul(v: V, s: F32) : V
+  fun div(v: V, s: F32)  : V
+  fun dot(a: V, b: V) : F32
+  fun len2(v: V) : F32
+  fun len(v: V) : F32
+  fun dist2(a : V, b : V) : F32
+  fun dist(a : V, b : V) : F32
+  fun unit(v : V) : V
+  fun eq(a: V, b: V, eps: F32) : Bool
+  fun lerp(a: V, b: V, t: F32) : V
+
+  fun v2(v: V) : V2
+  fun v3(v: V) : V3
+  fun v4(v: V) : V4
+
+primitive V2fun is VectorFun[V2 val]
+  fun apply(x' : F32, y': F32) : V2 => (x',y')
+  fun zero() : V2 => (0,0)
+  fun id() : V2 => (1,1)
+  fun add(a: V2, b: V2) : V2 => (a._1 + b._1, a._2 + b._2)
+  fun sub(a: V2, b: V2) : V2 => (a._1 - b._1, a._2 - b._2)
+  fun neg(v: V2) : V2 => (-v._1 , -v._2)
+  fun mul(v: V2, s: F32) : V2  => (v._1 * s, v._2 * s)
+  fun div(v: V2, s: F32)  : V2  => (v._1 / s, v._2 / s)
+  fun dot(a: V2, b: V2) : F32 => (a._1 * b._1) + (a._2 * b._2)
+
+  fun len2(v: V2) : F32 => dot(v,v)
+  fun len(v: V2) : F32 => dot(v,v).sqrt()
+  fun dist2(a : V2, b : V2) : F32  => len2(sub(a,b))
+  fun dist(a : V2, b : V2) : F32  => len(sub(a,b))
+  fun unit(v : V2) : V2 => div(v, len(v))
+  fun cross(a: V2, b: V2) : F32 => (a._1*b._2) - (b._1*a._2)
+  fun eq(a: V2, b: V2, eps: F32 = F32.epsilon()) : Bool =>
+    Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
+  fun v2(v: V2) : V2 => v
+  fun v3(v: V2) : V3 => (v._1, v._2, 0)
+  fun v4(v: V2) : V4 => (v._1, v._2, 0, 0)
+
+  fun lerp(a: V2, b: V2, t : F32) : V2 => 
+    (Linear.lerp(a._1, b._1, t), Linear.lerp(a._2, b._2, t))
+
+primitive V3fun is VectorFun[V3 val]
+  fun apply(x' : F32, y': F32, z': F32) : V3 => (x',y',z')
+  fun zero() : V3 => (0,0,0)
+  fun id() : V3 => (1,1,1)
+  fun add(a: V3, b: V3) : V3 => (a._1 + b._1, a._2 + b._2, a._3 + b._3)
+  fun sub(a: V3, b: V3) : V3 => (a._1 - b._1, a._2 - b._2, a._3 - b._3)
+  fun neg(v: V3) : V3 => (-v._1 , -v._2, -v._3)
+  fun mul(v: V3, s: F32) : V3  => (v._1 * s, v._2 * s, v._3 * s)
+  fun div(v: V3, s: F32)  : V3  => (v._1 / s, v._2 / s, v._3 / s)
+  fun dot(a: V3, b: V3) : F32 => (a._1 * b._1) + (a._2 * b._2) + (a._3 * b._3)
+  fun len2(v: V3) : F32 => dot(v,v)
+  fun len(v: V3) : F32 => dot(v,v).sqrt()
+  fun dist2(a : V3, b : V3) : F32  => len2(sub(a,b))
+  fun dist(a : V3, b : V3) : F32  => len(sub(a,b))
+  fun unit(v : V3) : V3 => div(v, len(v))
+  fun cross(a: V3, b: V3) : V3 =>
+    ((a._2*b._3) - (a._3*b._2), (a._3*b._1) - (a._1*b._3), (a._1*b._2) - (a._2*b._1))
+  fun eq(a: V3, b: V3, eps: F32 = F32.epsilon()) : Bool =>
+    Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps) and Linear.eq(a._3,b._3, eps)
+  fun v2(v: V3) : V2 => (v._1, v._2)
+  fun v3(v: V3) : V3 => v
+  fun v4(v: V3) : V4 => (v._1, v._2, v._3, 0)
+  fun lerp(a: V3, b: V3, t : F32) : V3 => 
+    (Linear.lerp(a._1, b._1, t), Linear.lerp(a._2, b._2, t), Linear.lerp(a._3, b._3, t))
+
+primitive V4fun is VectorFun[V4 val]
+  fun apply(x' : F32, y': F32, z': F32, w': F32) : V4 => (x',y',z',w')
+  fun zero() : V4 => (0,0,0,0)
+  fun id() : V4 => (1,1,1,1)
+  fun add(a: V4, b: V4) : V4 =>
+    (a._1 + b._1, a._2 + b._2, a._3 + b._3, a._4 + b._4)
+  fun sub(a: V4, b: V4) : V4 =>
+    (a._1 - b._1, a._2 - b._2, a._3 - b._3, a._4 - b._4)
+  fun neg(v: V4) : V4 => (-v._1 , -v._2, -v._3, -v._4)
+  fun mul(v: V4, s: F32) : V4  => (v._1 * s, v._2 * s, v._3 * s, v._4 * s)
+  fun div(v: V4, s: F32)  : V4  => (v._1 / s, v._2 / s, v._3 / s, v._4 / s)
+  fun dot(a: V4, b: V4) : F32 =>
+    (a._1 * b._1) + (a._2 * b._2) + (a._3 * b._3)+ (a._4 * b._4)
+  fun len2(v: V4) : F32 => dot(v,v)
+  fun len(v: V4) : F32 => dot(v,v).sqrt()
+  fun dist2(a : V4, b : V4) : F32  => len2(sub(a,b))
+  fun dist(a : V4, b : V4) : F32  => len(sub(a,b))
+  fun unit(v : V4) : V4 => div(v, len(v))
+  fun eq(a: V4, b: V4, eps: F32 = F32.epsilon()) : Bool =>
+   Linear.eq(a._1,b._1, eps)  and Linear.eq(a._2,b._2, eps)
+   and Linear.eq(a._3,b._3, eps) and Linear.eq(a._4,b._4, eps)
+   fun v2(v: V4) : V2 => (v._1, v._2)
+   fun v3(v: V4) : V3 => (v._1, v._2, v._3)
+   fun v4(v: V4) : V4 => v
+   fun lerp(a: V4, b: V4, t : F32) : V4 => 
+    (Linear.lerp(a._1, b._1, t), Linear.lerp(a._2, b._2, t),
+     Linear.lerp(a._3, b._3, t), Linear.lerp(a._4, b._4, t))
+
+
+
+
+// @Hack tuples dont work for subtypes so using Any instead of FixVector
+trait Vector[V : Any #read] is (Stringable & Equatable[Vector[V val]])
 """
 @author macdougall.doug@gmail.com
 
@@ -34,8 +156,6 @@ on the appropriate vector
   let p2x = Vector2(p3.v2()) // downsize (z chomped)
 
 """
-// @Hack tuples dont work for subtypes so using Any instead of FixVector
-trait Vector[V : Any #read] is (Stringable & Equatable[Vector[V val]])
   fun v2() : V2
   fun v3() : V3
   fun v4() : V4
