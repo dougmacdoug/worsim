@@ -24,7 +24,7 @@ Example:
 *** UNIT TESTS! [more and fix logging, standardize] ***
    * add fast sqrt for unit vector
    * slerp nlerp
-   * Matrix4
+   * M4
    * faster Q4
    * try to use compile time expressions once adopted by pony
        fun inv(q: Q4) : Q4 => #( div(conj(q), dot(q,q)) )

@@ -1,6 +1,7 @@
 /**********************************************
  * Copyright (c) 2017-2018, Douglas MacDougall
  * All Rights Reserved.
+ * see LICENSE for details
  **********************************************/
 
 primitive Linear
@@ -77,15 +78,15 @@ linear functions and helpers for linal types
         s
       end
 
-    fun to_string(o: (Q4 | Matrix2 | Matrix3 | Matrix4 | OptVector)) : String iso^ =>
+    fun to_string(o: (Q4 | M2 | M3 | M4 | OptVector)) : String iso^ =>
       match o
       | let v : V2 => _svec(v4(v), 2)
       | let v : V3 => _svec(v4(v), 3)
       | let v : V4 => _svec(v, 4)
       | let v : Q4 => _svec(v, 4)
-      | let m : Matrix2 => _smat(v4(m._1), v4(m._2) where n=2 )
-      | let m : Matrix3 => _smat(v4(m._1), v4(m._2), v4(m._3) where n=3)
-      | let m : Matrix4 => _smat(m._1, m._2, m._3, m._4, 4)
+      | let m : M2 => _smat(v4(m._1), v4(m._2) where n=2 )
+      | let m : M3 => _smat(v4(m._1), v4(m._2), v4(m._3) where n=3)
+      | let m : M4 => _smat(m._1, m._2, m._3, m._4, 4)
       else "None".string()
       end
 
