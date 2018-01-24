@@ -1,7 +1,5 @@
 use "linal"
 
-
-
 trait EntityComponent
   fun name() : String
 
@@ -10,6 +8,9 @@ class PostionComponent is (Stringable & EntityComponent)
 
   fun ref set_position(v : V3) => 
     _p() = v
+
+  fun ref set_position(v : Vector3) => 
+    _p() = v.as_tuple()
 
   fun box name() : String => "Position"
 
