@@ -4,6 +4,23 @@
 use "net"
 use "options"
 use "linal"
+
+// use "lib:ncurses"
+// use @initscr[None]()
+// use @printw[None](s : Pointer[U8] tag)
+// use @refresh[None]()
+// use @getch[U8]()
+// use @endwin[None]()
+
+// primitive NCURSES
+//   fun _init() =>
+//     @initscr()
+
+//   fun _final() =>
+//     @endwin()
+
+
+
 //primitive STRING_KEY : "str"
 
 // class MyUDPNotify is UDPNotify
@@ -29,14 +46,24 @@ actor Main
   var _a_number: USize = 0
   var _a_float: Float = F64(0.0)
   new create(env: Env) =>
-        env.out.print("<< application goes here >>")
+//    var ch: U8 = @getch()
+    env.out.print("<< application goes here >>")
+    env.out.print("\x1B[2J")
+    env.out.print("<< application goes here >>")
+    env.out.print("<< application goes here >>")
+    env.out.print("<< application goes here >>")
+    env.out.print("\x1B[2J")
+    env.out.print("<< application goes here >>")
+    env.out.print("<< application goes here >>")
+    env.out.print("<< application goes here >>")
+    env.out.print("<< application goes here >>")
     // fun ref arguments() ? =>
     //   var options = Options(_env.args)
     //   options
     //     .add("str", "t", StringArgument)
     //     .add("int", "i", I64Argument)
     //     .add("f64", "c", F64Argument)
-    
+
     //   for option in options do
     //     match option
     //     | ("str", let arg: String) => _a_string = arg

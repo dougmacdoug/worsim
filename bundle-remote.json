@@ -1,0 +1,8 @@
+{ 
+  "deps": [
+	{ 
+	  "type": "github",
+	  "repo": "dougmacdoug/ponylang-linal"
+	}
+  ]
+}
